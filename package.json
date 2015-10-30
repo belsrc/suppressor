@@ -1,0 +1,39 @@
+{
+  "name": "suppressor",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node node_modules/mocha/bin/mocha --reporter spec --ui tdd --recursive test"
+  },
+  "author": "Bryan Kizer",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/belsrc/suppressor.git"
+  },
+  "keywords": [
+    "express",
+    "request",
+    "throttle",
+    "throttling",
+    "limit",
+    "limiter",
+    "rate",
+    "ratelimit",
+    "requestlimit",
+    "security"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/belsrc/suppressor/issues"
+  },
+  "homepage": "https://github.com/belsrc/suppressor#readme",
+  "devDependencies": {
+    "chai": "^3.4.0",
+    "mocha": "^2.3.3",
+    "supertest": "^1.1.0"
+  },
+  "dependencies": {
+
+  }
+}
