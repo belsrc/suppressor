@@ -25,7 +25,7 @@ passport.authenticate('local', function(error, user) {
   else {
     request.logIn(user, function(error) {
       if(error) {
-        limiter.increment(response, function(error, overLimit) {
+        suppressor.increment(request, function(error, overLimit) {
           if(error) {
             next(error);
           }
@@ -41,7 +41,7 @@ passport.authenticate('local', function(error, user) {
         });
       }
       else {
-        limiter.clear();
+        suppressor.clear();
         // Log in was successful
       }
     });
@@ -61,8 +61,8 @@ The available options properties are:
 * ```reset```: The number of seconds until the try count is reset. Default is 300 seconds (5 min).
 
 
-#### #increment(response, request, callback)
-Increments the try count. Requires the response object, request object, and a callback.
+#### #increment( request, callback)
+Increments the try count. Requires the request object and a callback.
 The callback is past an error, if one occurs, and a boolean value of whether the try count is over the limit.
 
 #### #clear()
