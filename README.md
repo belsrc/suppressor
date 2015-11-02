@@ -57,9 +57,10 @@ The available options properties are:
 * ```reset```: The number of seconds until the try count is reset. Default is 300 seconds (5 min).
 * ```field```: The field name to track and increment. Defaults to 'loginCount'.
 
-#### #increment( request, callback)
+#### #increment(request, callback)
 Increments the try count. Requires the request object and a callback.
-The callback is past an error, if one occurs, and a boolean value of whether the try count is over the limit.
+The callback is passed an error, if one occurs, and a boolean value of whether the try count is over the limit.
+If no callback is provided than a bluebird Promise is returned.
 
 #### #clear()
 Clears the saved count number and the last try time.
