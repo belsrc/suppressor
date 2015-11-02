@@ -19,33 +19,29 @@ var options = {
 var suppressor = new Suppressor(request.session, options);
 
 passport.authenticate('local', function(error, user) {
-  if(error){
-    return next(error);
-  }
-  else {
-    request.logIn(user, function(error) {
-      if(error) {
-        suppressor.increment(request, function(error, overLimit) {
-          if(error) {
-            next(error);
+  request.logIn(user, function(error) {
+    if(error) {
+      suppressor.increment(request, function(error, overLimit) {
+        if(error) {
+          next(error);
+        }
+        else {
+          if(overLimit) {
+            // Do something with when the
+            // limit has been exceeded
           }
           else {
-            if(overLimit) {
-              // Do something with when the
-              // limit has been exceeded
-            }
-            else {
-              // Log in failed but limit hasn't been hit
-            }
+            // Log in failed but limit hasn't been hit
           }
-        });
-      }
-      else {
-        suppressor.clear();
-        // Log in was successful
-      }
-    });
-  }
+        }
+      });
+    }
+    else {
+      suppressor.clear();
+      // Log in was successful
+    }
+  });
+
 })(request, response, next);
 ```
 
@@ -59,7 +55,7 @@ The available options properties are:
 * ```blacklist```: An array containing blacklist IP addresses. Default is an empty array.
 * ```count```: The number of tries before blocking. Default is 5.
 * ```reset```: The number of seconds until the try count is reset. Default is 300 seconds (5 min).
-
+* ```field```: The field name to track and increment. Defaults to 'loginCount'.
 
 #### #increment( request, callback)
 Increments the try count. Requires the request object and a callback.
