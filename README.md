@@ -51,8 +51,8 @@ passport.authenticate('local', function(error, user) {
 #### #Suppressor(session, options)
 The constructor takes the request session object and an options object.
 The available options properties are:
-* ```whitelist```: An array containing whitelisted IP addresses. Default is an empty array.
-* ```blacklist```: An array containing blacklist IP addresses. Default is an empty array.
+* ```whitelist```: An array containing whitelisted IP addresses, these addresses skip all attempt counts. Default is an empty array.
+* ```blacklist```: An array containing blacklist IP addresses, these addresses are always rejected. Default is an empty array.
 * ```count```: The number of tries before blocking. Default is 5.
 * ```reset```: The number of seconds until the try count is reset. Default is 300 seconds (5 min).
 * ```field```: The field name to track and increment. Defaults to 'loginCount'.
