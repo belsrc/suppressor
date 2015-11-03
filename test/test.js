@@ -1,6 +1,6 @@
-var chai    = require('chai');
-var assert  = chai.assert;
-var merge   = require('lodash.merge');
+var chai   = require('chai');
+var assert = chai.assert;
+var merge  = require('lodash.merge');
 
 var Suppressor = require('../lib/suppressor');
 
@@ -105,7 +105,7 @@ suite('Suppressor', function() {
       var sess = {counter: 6};
       var sup = new Suppressor(sess, options);
       var expected = true;
-console.log(options);
+
       sup.increment(req, function(error, actual) {
         assert.strictEqual(expected, actual);
       });
