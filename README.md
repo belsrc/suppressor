@@ -14,14 +14,16 @@ Then simply include the module and add it into the application.
 var Suppressor = require('suppressor');
 var options = {
   count: 5,
-  reset: 5 * 60
+  reset: 5 * 60,
+  driver: 'session',
+  session: request.session
 };
-var suppressor = new Suppressor(request.session, options);
+var suppressor = new Suppressor(options);
 
 passport.authenticate('local', function(error, user) {
   request.logIn(user, function(error) {
     if(error) {
-      suppressor.increment(request, function(error, overLimit) {
+      suppressor.increment(request, null, function(error, overLimit) {
         if(error) {
           next(error);
         }
@@ -37,33 +39,109 @@ passport.authenticate('local', function(error, user) {
       });
     }
     else {
-      suppressor.clear();
-      // Log in was successful
+      suppressor.clear(null, function(error) {
+        // Log in was successful
+      });
     }
   });
 
 })(request, response, next);
 ```
 
+If the callback is omitted, than a Promise is returned.
+```javascript
+var Suppressor = require('suppressor');
+var options = {
+  count: 5,
+  reset: 5 * 60,
+  driver: 'session',
+  session: request.session
+};
+var suppressor = new Suppressor(options);
+
+passport.authenticate('local', function(error, user) {
+  request.logIn(user, function(error) {
+    if(error) {
+      suppressor
+        .increment(request, null)
+        .then(function(overLimit) {
+          if(overLimit) {
+            // Do something with when the
+            // limit has been exceeded
+          }
+          else {
+            // Log in failed but limit hasn't been hit
+          }
+        })
+    }
+    else {
+      suppressor
+        .clear(null)
+        .then(function() {
+          // Log in was successful
+        });
+    }
+  });
+})(request, response, next);
+```
+
+
 ### Methods
 -----------------------------------------------------
 
-#### #Suppressor(session, options)
-The constructor takes the request session object and an options object.
+#### #Suppressor(options)
+The constructor takes an options object.
 The available options properties are:
+* ```driver```: The type of driver to use. The available options are ```session```, ```mongo``` and ```redis```.
+* ```session```: The application's session object, only needed when using the session driver.
+* ```conString```: The Mongo DB connection string, only needed when using the mongo driver.
+* ```collection```: The Mongo DB collection to use, only needed when using the mongo driver.
+* ```host```: The redis host to use, only needed when using the redis driver. [Defaults to '127.0.0.1']
+* ```port```: The redis port to use, only needed when using the redis driver. [Defaults to 6379]
+* ```options```: Any additional options to passed to the underlying redis connection.
 * ```whitelist```: An array containing whitelisted IP addresses, these addresses skip all attempt counts. Default is an empty array.
 * ```blacklist```: An array containing blacklist IP addresses, these addresses are always rejected. Default is an empty array.
 * ```count```: The number of tries before blocking. Default is 5.
 * ```reset```: The number of seconds until the try count is reset. Default is 300 seconds (5 min).
 * ```field```: The field name to track and increment. Defaults to 'loginCount'.
 
-#### #increment(request, callback)
-Increments the try count. Requires the request object and a callback.
+__Bare minimum for each driver__
+```javascript
+var session = {
+  count: 5,
+  reset: 5 * 60,
+  driver: 'session',
+  session: request.session
+};
+var sessionSuppressor = new Suppressor(session);
+
+var mongo = {
+  count: 5,
+  reset: 5 * 60,
+  driver: 'mongo',
+  conString: 'mongodb://localhost/suppressor',
+  collection: 'limiter'
+};
+var mongoSuppressor = new Suppressor(mongo);
+
+var redis = {
+  count: 5,
+  reset: 5 * 60,
+  driver: 'redis'
+};
+var redisSuppressor = new Suppressor(redis);
+```
+
+
+#### #increment(request, id[, callback])
+Increments the try count. Requires the request object and an id. The callback can be omitted to return a Promise.
+The ID parameter can be null when using the Session driver as it handles IDs automatically.
 The callback is passed an error, if one occurs, and a boolean value of whether the try count is over the limit.
 If no callback is provided than a bluebird Promise is returned.
 
-#### #clear()
-Clears the saved count number and the last try time.
+#### #clear(id[, callback])
+Clears the saved count number and the last try time. The callback can be omitted to return a Promise.
+The ID parameter can be null when using the Session driver as it handles IDs automatically.
 
 
 ### License

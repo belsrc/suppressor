@@ -13,7 +13,8 @@ var req = {
 var options = {
   count: 5,
   reset: 5 * 60,
-  field: 'counter'
+  field: 'counter',
+  driver: 'session'
 };
 
 
@@ -22,24 +23,27 @@ suite('Suppressor', function() {
   suite('#increment', function() {
 
     test('does NOT throw for null request', function() {
-      var sess = {};
-      var sup = new Suppressor(sess, options);
+      var sess = function(){};
+      options.session = sess;
+      var sup = new Suppressor(options);
       assert.doesNotThrow(function() {
         sup.increment(null, function() {});
       });
     });
 
     test('returns Promise when no callback is given', function() {
-      var sess = {};
-      var sup = new Suppressor(sess, options);
+      var sess = function(){};
+      options.session = sess;
+      var sup = new Suppressor(options);
       var result = sup.increment(req);
       var actual = result.constructor.name;
       assert.strictEqual(actual, 'Promise');
     });
 
     test('correctly increments field value', function() {
-      var sess = {};
-      var sup = new Suppressor(sess, options);
+      var sess = function(){};
+      options.session = sess;
+      var sup = new Suppressor(options);
 
       // Doesnt exist before inc call
       assert.isUndefined(sess.counter);
@@ -56,14 +60,18 @@ suite('Suppressor', function() {
       tmp.blacklist = ['127.0.0.1'];
       var expected = true;
 
-      var sess = {};
-      var sup = new Suppressor(sess, tmp);
+      var sess = function(){};
+      tmp.session = sess;
+      var sup = new Suppressor(tmp);
+
       sup.increment(req, function(error, actual) {
         return assert.strictEqual(expected, actual);
       });
 
       var sess2 = {counter: 6};
-      var sup2 = new Suppressor(sess2, tmp);
+      tmp.session = sess2;
+      var sup2 = new Suppressor(tmp);
+
       sup2.increment(req, function(error, actual) {
         return assert.strictEqual(expected, actual);
       });
@@ -74,26 +82,30 @@ suite('Suppressor', function() {
         count: 5,
         reset: 5 * 60,
         field: 'counter',
-        whitelist: ['127.0.0.1']
+        whitelist: ['127.0.0.1'],
+        driver: 'session'
       };
       var expected = false;
 
-      var sess = {};
-      var sup = new Suppressor(sess, tmp);
+      var sess = function(){};
+      tmp.session = sess;
+      var sup = new Suppressor(tmp);
       sup.increment(req, function(error, actual) {
         return assert.strictEqual(expected, actual);
       });
 
       var sess2 = {counter: 6};
-      var sup2 = new Suppressor(sess2, tmp);
+      tmp.session = sess2;
+      var sup2 = new Suppressor(tmp);
       sup2.increment(req, function(error, actual) {
         assert.strictEqual(expected, actual);
       });
     });
 
     test('returns false when below the limit', function() {
-      var sess = {};
-      var sup = new Suppressor(sess, options);
+      var sess = function(){};
+      options.session = sess;
+      var sup = new Suppressor(options);
       var expected = false;
 
       sup.increment(req, function(error, actual) {
@@ -103,7 +115,8 @@ suite('Suppressor', function() {
 
     test('returns true when above the limit', function() {
       var sess = {counter: 6};
-      var sup = new Suppressor(sess, options);
+      options.session = sess;
+      var sup = new Suppressor(options);
       var expected = true;
 
       sup.increment(req, function(error, actual) {
@@ -115,33 +128,39 @@ suite('Suppressor', function() {
   suite('#clear', function() {
 
     test('clears the session counter', function() {
-      var sess = {};
+      var sess = function(){};
       var options = {
         count: 5,
         reset: 5 * 60,
-        field: 'counter'
+        field: 'counter',
+        driver: 'session'
       };
 
       sess[options.field] = 5;
-      var sup = new Suppressor(sess, options);
-      sup.clear();
+      options.session = sess;
+      var sup = new Suppressor(options);
 
-      assert.isNull(sess[options.field]);
+      sup.clear(options.field, function() {
+        assert.isNull(sess[options.field]);
+      });
     });
 
     test('clears the session timer', function() {
-      var sess = {};
+      var sess = function(){};
       var options = {
         count: 5,
         reset: 5 * 60,
-        field: 'counter'
+        field: 'counter',
+        driver: 'session'
       };
 
       sess.lastTry = new Date();
-      var sup = new Suppressor(sess, options);
-      sup.clear();
+      options.session = sess;
+      var sup = new Suppressor(options);
 
-      assert.isNull(sess.lastTry);
+      sup.clear(null, function() {
+        assert.isNull(sess.lastTry);
+      });
     });
   });
 
